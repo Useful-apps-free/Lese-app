@@ -1,0 +1,172 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <meta name="mobile-web-app-capable" content="yes">
+    <link rel="manifest" href="manifest.json">
+    <title>Lesen lernen</title>
+    <style>
+        /* CSS bleibt unverändert */
+        html, body { margin: 0; padding: 0; width: 100%; height: 100%; overflow: hidden; font-family: sans-serif; background-color: #f0f8ff; }
+        #app-container { display: flex; justify-content: center; align-items: center; width: 100vw; height: 100vh; text-align: center; }
+        #top-ui-panel { position: fixed; top: 15px; left: 50%; transform: translateX(-50%); text-align: center; z-index: 10; cursor: pointer; }
+        #level-display { font-size: 22px; font-weight: bold; background-color: rgba(255, 255, 255, 0.8); padding: 5px 15px; border-radius: 15px; }
+        #progress-display { font-size: 16px; font-weight: normal; margin-top: 5px; display: none; }
+        #word-display { font-size: 15vw; font-weight: bold; }
+        #feedback-display { position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%); font-size: 20px; font-weight: bold; height: 30px; }
+        .side-button { position: fixed; top: 100px; width: 60px; height: calc(100vh - 120px); color: white; border: none; font-size: 30px; cursor: pointer; display: flex; justify-content: center; align-items: center; writing-mode: vertical-rl; text-orientation: mixed; border-radius: 15px; z-index: 9; }
+        #left-button { left: 15px; background-color: #008CBA; }
+        #right-button { right: 15px; background-color: #4CAF50; }
+        #hamburger-button { position: fixed; top: 15px; left: 15px; font-size: 28px; cursor: pointer; background: none; border: none; z-index: 101; width: 40px; height: 40px; }
+        #side-menu { position: fixed; top: 0; left: -35vw; width: 33.33vw; height: 100vh; background-color: #ffffff; box-shadow: 2px 0 10px rgba(0,0,0,0.2); transition: left 0.3s ease-in-out; z-index: 100; display: flex; flex-direction: column; }
+        #side-menu.open { left: 0; }
+        #menu-header { padding: 15px; padding-top: 60px; border-bottom: 1px solid #ccc; }
+        #menu-header button { font-size: 16px; width: 100%; text-align: left; background: #eee; border: 1px solid #ddd; border-radius: 8px; padding: 8px; }
+        #menu-content-wrapper { display: flex; flex: 1; min-height: 0; }
+        .menu-column { width: 50%; display: flex; flex-direction: column; border-right: 1px solid #eee; }
+        .menu-column:last-child { border-right: none; }
+        #menu-progress { text-align: center; font-weight: bold; padding: 12px; font-size: 14px; background-color: #f8f8f8; }
+        .scrollable-list { flex: 1; overflow-y: auto; }
+        .list-item { padding: 12px 15px; border-bottom: 1px solid #eee; cursor: pointer; font-size: 14px; position: relative; }
+        .list-item:hover { background-color: #f0f0f0; }
+        .list-item.locked { color: #aaa; cursor: not-allowed; }
+        .list-item.locked:hover { background-color: transparent; }
+        .list-item.completed::after { content: '✓'; color: green; font-weight: bold; position: absolute; right: 15px; }
+        #success-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background-color: rgba(0, 0, 0, 0.7); display: none; justify-content: center; align-items: center; z-index: 200; }
+        #success-message { color: white; font-size: 10vw; font-weight: bold; text-shadow: 0 0 20px #ffc107; }
+    </style>
+</head>
+<body>
+    <div id="top-ui-panel"><div id="level-display">Stufe 1</div><div id="progress-display">0 von 10</div></div>
+    <div id="app-container"><div id="word-display">Start</div></div>
+    <div id="feedback-display"></div>
+    <button id="hamburger-button">☰</button>
+    <div id="side-menu"><div id="menu-header"><button>⚙️ Einstellungen</button></div><div id="menu-content-wrapper"><div class="menu-column"><div id="menu-progress"></div><div id="level-list" class="scrollable-list"></div></div><div class="menu-column"><div id="custom-list" class="scrollable-list"></div></div></div></div>
+    <button id="left-button" class="side-button">Test</button>
+    <button id="right-button" class="side-button">Nächstes Wort</button>
+    <div id="success-overlay"><div id="success-message"></div></div>
+
+    <script>
+        const ADMIN_PASSWORD = "1234";
+        let adminTapCount = 0;
+        let adminTapTimer;
+        
+        // --- DATEN ---
+        // NEU: Die Stufen wurden aus Ihrer liste.txt generiert
+        const stufen = [
+            ["der", "die", "und", "in", "den", "von", "zu", "das", "mit", "sich"],
+            ["des", "auf", "für", "ist", "im", "dem", "nicht", "ein", "eine", "als"],
+            ["auch", "es", "an", "werden", "aus", "er", "hat", "dass", "sie", "nach"],
+            ["wird", "bei", "einer", "um", "am", "sind", "noch", "wie", "einem", "über"],
+            ["einen", "so", "zum", "war", "haben", "nur", "oder", "aber", "vor", "zur"],
+            ["bis", "mehr", "durch", "man", "sein", "wurde", "sei", "Prozent", "hatte", "kann"],
+            ["gegen", "vom", "können", "schon", "wenn", "habe", "seine", "ihre", "dann", "unter"],
+            ["wir", "soll", "ich", "eines", "Jahr", "zwei", "Jahren", "diese", "dieser", "wieder"],
+            ["keine", "Uhr", "seiner", "worden", "will", "zwischen", "immer", "was", "sagte", "gibt"],
+            ["alle", "diesem", "seit", "muß", "wurden", "beim", "doch", "jetzt", "waren", "drei"],
+            ["Jahre", "neue", "neuen", "damit", "bereits", "da", "ihr", "seinen", "müssen", "ab"],
+            ["ihrer", "ohne", "sondern", "selbst", "ersten", "nun", "etwa", "heute", "ihren", "weil"],
+            ["ihm", "seien", "Menschen", "Deutschland", "anderen", "werde", "rund", "Ende", "jedoch", "Zeit"],
+            ["sollen", "ins", "seinem", "uns", "Stadt", "geht", "sehr", "hier", "ganz", "erst"],
+            ["wollen", "Berlin", "allem", "sowie", "hatten", "kein", "deutschen", "machen", "lassen", "andere"],
+            ["ob", "dieses", "steht", "dabei", "wegen", "weiter", "denn", "beiden", "einmal", "etwas"],
+            ["nichts", "allerdings", "vier", "gut", "viele", "wo", "viel", "dort", "alles", "wäre"],
+            ["kommt", "vergangenen", "denen", "fast", "fünf", "könnte", "hätten", "Frau", "kommen", "diesen"],
+            ["letzten", "zwar", "großen", "dazu", "Mann", "sollte", "würde", "also", "bisher", "Leben"],
+            ["Welt", "konnte", "ihrem", "Frauen", "während", "Land", "zehn", "würden", "stehen", "ja"],
+            ["heißt", "dies", "zurück", "Kinder", "dessen", "ihnen", "deren", "sogar", "Frage", "gewesen"],
+            ["erste", "gab", "liegt", "gar", "davon", "gestern", "geben", "Teil", "Polizei", "hätte"],
+            ["eigenen", "kaum", "sieht", "große", "weitere", "sehen", "macht", "Angaben", "weniger", "gerade"],
+            ["läßt", "Geld", "deutsche", "allen", "darauf", "wohl", "später", "könne", "deshalb", "aller"],
+            ["kam", "Arbeit", "mich", "gegenüber", "nächsten", "bleibt", "wenig", "lange", "gemacht", "wer"],
+            ["Fall", "mir", "gehen", "Berliner", "mal", "Weg", "wollte", "sechs", "keinen", "Woche"],
+            ["dagegen", "alten", "möglich", "gilt", "erklärte", "müsse", "könnten", "Geschichte", "zusammen", "finden"],
+            ["Tag", "Art", "erhalten", "Wochen", "jeder", "nie", "bleiben", "besonders", "Jahres", "zunächst"],
+            ["derzeit", "allein", "deutlich", "Entwicklung", "weiß", "einige", "sollten", "geworden", "statt", "Platz"],
+            ["inzwischen", "Freitag", "seines", "Montag", "Europa", "schließlich", "Sonntag", "einfach", "gehört", "eher"],
+            ["oft", "Zahl", "neben", "hält", "weit", "meisten", "Thema", "zeigt", "zweiten", "Januar"],
+            ["insgesamt", "je", "mußte", "Anfang", "hinter", "ebenfalls", "ging", "Mitarbeiter", "darüber", "vielen"],
+            ["Ziel", "darf", "Seite", "fest", "hin", "erklärt", "Namen", "Haus", "Mittwoch", "damals"],
+            ["Dienstag", "Hilfe", "Mai", "Markt", "Tage", "Donnerstag", "halten", "gleich", "nehmen", "solche"],
+            ["Entscheidung", "besser", "alte", "Leute", "Samstag", "sagen", "System", "März", "tun", "Monaten"],
+            ["kleinen", "lang", "knapp", "bringen", "wissen", "Kosten", "Erfolg", "bekannt", "findet", "daran"],
+            ["künftig", "acht", "schnell", "Grund", "scheint", "Zukunft", "Stuttgart", "bin", "liegen", "Gruppe"],
+            ["Rolle", "stellt", "Juni", "sieben", "September", "nämlich", "Männer", "Oktober", "überhaupt", "eigene"],
+            ["gegeben", "außerdem", "Stunden", "eigentlich", "Meter", "ließ", "Probleme", "vielleicht", "ebenso", "Bereich"],
+            ["Beispiel", "Höhe", "Familie", "Bild", "Ländern", "Tagen", "schwer", "zuvor", "genau", "April"],
+            ["stellen", "neu", "erwartet", "sicher", "führen", "mehrere", "Programm", "offenbar", "weiteren", "natürlich"],
+            ["stark", "Dezember", "Juli", "ganze", "kommenden", "Kunden", "bekommen", "eben", "kleine", "trotz"],
+            ["wirklich", "Lage", "Länder", "leicht", "gekommen", "Spiel", "laut", "November", "kurz", "führt"],
+            ["innerhalb", "unsere", "meint", "Form", "anders", "völlig", "gute", "bislang", "August", "Hand"],
+            ["jede", "Film", "Minuten", "erreicht", "Musik", "Kritik", "Mitte", "Verfügung", "Buch", "dürfen"],
+            ["jeweils", "einigen", "Umsatz", "spielen", "Daten", "welche", "müßten", "hieß", "paar", "nachdem"],
+            ["Kunst", "gebracht", "Problem", "jeden", "recht", "erneut", "längst", "Eltern", "Beginn", "besteht"],
+            ["mindestens", "bietet", "Bürger", "Trainer", "bald", "Fragen", "klar", "Seiten", "gehören", "erstmals"],
+            ["Februar", "zeigen", "Titel", "Stück", "größten", "setzt", "Wert", "möchte", "daher", "wolle"],
+            ["lediglich", "Nacht", "nimmt", "Firma", "zuletzt", "Werk", "hohen", "leben", "Kirche", "weiterhin"],
+            ["gebe", "gestellt", "Mitglieder", "Rahmen", "zweite", "Paris", "Situation", "gefunden", "Wochenende", "Wasser"],
+            ["Recht", "sonst", "stand", "Hälfte", "Möglichkeit", "versucht", "blieb", "junge", "Straße", "Sache"],
+            ["arbeiten", "Monate", "Mutter", "berichtet", "letzte", "wollten", "zwölf", "zumindest", "Wahl", "genug"],
+            ["Weise", "Vater", "Bericht", "hoch", "beginnt", "Wort", "obwohl", "Kopf", "spielt", "Interesse"],
+            ["Westen", "verloren", "Preis", "jedem", "erreichen", "setzen", "spricht", "früher", "teilte", "zudem"],
+            ["einzelnen", "bereit", "Blick", "Druck", "Kilometer", "gemeinsam", "Bedeutung", "Chance", "besten", "Ansicht"],
+            ["endlich", "Stelle", "direkt", "solchen", "solle", "Einsatz", "richtig", "größte", "sofort", "neuer"],
+            ["ehemaligen", "unserer", "dürfte", "schaffen", "Augen", "Internet", "Raum", "Mannschaft", "neun", "kamen"],
+            ["Ausstellung", "Zeiten", "einzige", "meine", "Verfahren", "Angebot", "Richtung", "Projekt", "niemand", "weder"],
+            ["tatsächlich", "Personen", "geführt", "Gespräch", "Kreis", "Hamburger", "Schule", "guten", "Hauptstadt", "durchaus"],
+            ["Zusammenarbeit", "darin", "Schritt", "meist", "groß", "zufolge", "Sprache", "Punkte", "Vergleich", "genommen"],
+            ["gleichen", "du", "verschiedenen", "Kollegen", "neues", "Bürgermeister", "Angst", "stellte", "Sommer", "danach"],
+            ["anderer", "gesagt", "Sicherheit", "Macht", "Bau", "handelt", "Folge", "Bilder", "lag", "Osten"],
+            ["Handel", "sprach", "Aufgabe", "Chef", "frei", "dennoch", "hohe", "Firmen", "Mädchen", "entwickelt"],
+            ["fand", "bringt", "Hause", "Gefahr", "per", "zugleich", "früheren", "dadurch", "ganzen", "Abend"],
+            ["erzählt", "Streit", "jedenfalls", "gesehen", "darunter", "Spieler", "forderte", "Meinung", "wenigen", "sowohl"],
+            ["meinte", "mag", "Auto", "Lösung", "Boden", "hinaus", "Sohn", "bevor", "Peter", "mußten"],
+            ["keiner", "Ort", "braucht", "Kind", "Verein", "sprechen", "gleichzeitig", "sogenannten", "geplant", "Mittel"],
+            ["her", "Mensch", "großer", "wenige", "dritten", "nahm", "bedeutet", "Feld", "Bank", "oben"],
+            ["gesetzt", "Ausland", "Vertreter", "jedes", "ziehen", "berichtete", "aufgrund", "warum", "Kindern", "heraus"],
+            ["heutigen", "Anteil", "Herr", "Liebe", "rechnen", "fällt", "Sicht", "Idee", "verlassen", "Leiter"],
+            ["Bühne", "offen", "stets", "Theater", "ändern", "entschieden", "Geschäft", "Tochter", "gelten", "erwarten"],
+            ["läuft", "fordert", "Japan", "Sieg", "Stimmen", "wählen", "gewinnen", "bieten", "Nähe", "jährlich"],
+            ["Bremen", "Schüler", "Rede", "Zuschauer", "hingegen", "anderes", "Führung", "Besucher", "Drittel", "immerhin"],
+            ["Kultur", "betonte", "mittlerweile", "Saison", "suchen", "Zahlen", "Roman", "gesamte", "indem", "Stunde"],
+            ["ehemalige", "Auftrag", "entscheiden", "genannt", "tragen", "langen", "häufig", "alt", "Luft", "übernehmen"],
+            ["stärker", "ohnehin", "zeigte", "geplanten", "Reihe", "darum", "verhindern", "begann", "verkauft", "wichtig"],
+            ["sah", "gesamten", "verwendet", "vorbei", "helfen", "Folgen"]
+        ];
+
+        // NEU: Custom Lists übersichtlich formatiert
+        const customLists = {
+            "Orte": ["Hannover", "Hamburg", "Berlin", "München", "Köln", "Deutschland"],
+            "Namen": ["Lisa", "Markus", "Felix", "Emily"]
+        };
+        let aktuelleStufe = 1, hoechsteStufe = 1, currentTestType = 'stufe', currentCustomList = '', wordsOfCurrentLevel = [], wordsToTest = [], currentWord = '', currentMode = 'training', wasCorrect = false, totalWordsInTest = 0;
+        const wordDisplay = document.getElementById('word-display'), levelDisplay = document.getElementById('level-display'), topUiPanel = document.getElementById('top-ui-panel'), progressDisplay = document.getElementById('progress-display'), feedbackDisplay = document.getElementById('feedback-display'), leftButton = document.getElementById('left-button'), rightButton = document.getElementById('right-button'), hamburgerButton = document.getElementById('hamburger-button'), sideMenu = document.getElementById('side-menu'), menuProgress = document.getElementById('menu-progress'), levelList = document.getElementById('level-list'), customListContainer = document.getElementById('custom-list'), successOverlay = document.getElementById('success-overlay'), successMessage = document.getElementById('success-message');
+        const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition; const recognition = new SpeechRecognition(); recognition.lang = 'de-DE'; recognition.interimResults = false;
+        function shuffle(array) { for (let i = array.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1)); [array[i], array[j]] = [array[j], array[i]]; } }
+        function speak(text) { if (!('speechSynthesis' in window)) return; const utterance = new SpeechSynthesisUtterance(text); utterance.lang = 'de-DE'; utterance.rate = 0.85; window.speechSynthesis.cancel(); window.speechSynthesis.speak(utterance); }
+        function showNewTrainingWord() { if (wordsOfCurrentLevel.length === 0) return; let availableWords = wordsOfCurrentLevel.filter(word => word !== currentWord); if (availableWords.length === 0) availableWords = wordsOfCurrentLevel; const randomIndex = Math.floor(Math.random() * availableWords.length); currentWord = availableWords[randomIndex]; wordDisplay.textContent = currentWord; speak(currentWord); }
+        function ladeStufe(stufenNummer, istWiederholung = false) { currentTestType = 'stufe'; aktuelleStufe = stufenNummer; wordsOfCurrentLevel = stufen[stufenNummer - 1]; levelDisplay.textContent = `Stufe ${stufenNummer}`; if (!istWiederholung) { localStorage.setItem('aktuelleLeseStufe', aktuelleStufe); } }
+        function ladeCustomList(listenName) { currentTestType = 'custom'; currentCustomList = listenName; wordsOfCurrentLevel = customLists[listenName]; levelDisplay.textContent = listenName; }
+        function testAbschliessen() { let successText = "🎉 Super gemacht! 🎉"; if (currentTestType === 'stufe') { const naechsteStufe = aktuelleStufe + 1; if (naechsteStufe > hoechsteStufe) { hoechsteStufe = naechsteStufe; localStorage.setItem('hoechsteLeseStufe', hoechsteStufe); } if (naechsteStufe > stufen.length) { successText = "🎉 ALLES GESCHAFFT! 🎉"; } else { successText = `🎆 Stufe ${naechsteStufe}!!! 🎆`; } setTimeout(() => { successOverlay.style.display = 'none'; if (naechsteStufe <= stufen.length) { ladeStufe(naechsteStufe); switchToTrainingMode(); } }, 3000); } else { localStorage.setItem(`customList_${currentCustomList}_completed`, 'true'); setTimeout(() => { successOverlay.style.display = 'none'; switchToTrainingMode(); }, 3000); } successMessage.textContent = successText; successOverlay.style.display = 'flex'; }
+        function updateProgressDisplay() { const remainingWords = wordsToTest.length; const completedWords = totalWordsInTest - remainingWords; progressDisplay.textContent = `${completedWords} von ${totalWordsInTest}`; }
+        function switchToTestMode() { currentMode = 'test'; progressDisplay.style.display = 'block'; wordDisplay.style.color = 'black'; feedbackDisplay.textContent = 'Drücke Sprechen und lies vor'; leftButton.textContent = 'Training'; rightButton.textContent = 'Sprechen 🎤'; let currentTestWords = [...wordsOfCurrentLevel]; if (currentTestType === 'stufe' && aktuelleStufe > 1) { const previousLevels = stufen.slice(0, aktuelleStufe - 1); const previousWordsPool = previousLevels.flat(); shuffle(previousWordsPool); const bonusWords = previousWordsPool.slice(0, 5); currentTestWords.push(...bonusWords); } wordsToTest = currentTestWords; shuffle(wordsToTest); totalWordsInTest = wordsToTest.length; updateProgressDisplay(); showNextTestWord(); }
+        function showNextTestWord() { if (wordsToTest.length > 0) { currentWord = wordsToTest[0]; wordDisplay.textContent = currentWord; wordDisplay.style.color = 'black'; feedbackDisplay.textContent = 'Drücke Sprechen und lies vor'; } else { setTimeout(testAbschliessen, 500); } }
+        recognition.onresult = (event) => { recognition.stop(); const spokenText = event.results[0][0].transcript.trim().toLowerCase(); if (spokenText === currentWord.toLowerCase()) { wasCorrect = true; feedbackDisplay.textContent = 'Super, richtig!'; wordDisplay.style.color = '#4CAF50'; wordsToTest.shift(); updateProgressDisplay(); setTimeout(showNextTestWord, 1500); } else { feedbackDisplay.textContent = `Fast! Ich habe "${spokenText}" gehört. Versuch es nochmal!`; wordDisplay.style.color = '#dc3545'; } };
+        function startRecording() { wasCorrect = false; feedbackDisplay.textContent = 'Ich höre zu... 👂'; rightButton.disabled = true; try { recognition.start(); } catch(e) { console.error("Aufnahme läuft bereits."); rightButton.disabled = false; } }
+        recognition.onend = () => { rightButton.disabled = false; if (!wasCorrect && currentMode === 'test') { feedbackDisplay.textContent = 'Drücke Sprechen und lies vor'; } };
+        recognition.onerror = (event) => { feedbackDisplay.textContent = "Hoppla, da gab es einen Fehler."; console.error("Speech Recognition Error:", event.error); };
+        function populateLevelList() { levelList.innerHTML = ''; menuProgress.textContent = `Stufe ${aktuelleStufe} von ${stufen.length}`; for (let i = 1; i <= stufen.length; i++) { const item = document.createElement('div'); item.className = 'list-item'; item.textContent = `Stufe ${i}`; if (i > hoechsteStufe) { item.classList.add('locked'); } else { item.addEventListener('click', () => { ladeStufe(i, true); switchToTrainingMode(); sideMenu.classList.remove('open'); }); } levelList.appendChild(item); } }
+        function populateCustomLists() { customListContainer.innerHTML = ''; for (const listenName in customLists) { const item = document.createElement('div'); item.className = 'list-item'; item.textContent = listenName; if (localStorage.getItem(`customList_${listenName}_completed`) === 'true') { item.classList.add('completed'); } item.addEventListener('click', () => { ladeCustomList(listenName); switchToTrainingMode(); sideMenu.classList.remove('open'); }); customListContainer.appendChild(item); } }
+        hamburgerButton.addEventListener('click', () => { populateLevelList(); populateCustomLists(); sideMenu.classList.toggle('open'); });
+        function switchToTrainingMode() { currentMode = 'training'; progressDisplay.style.display = 'none'; wordDisplay.style.color = 'black'; feedbackDisplay.textContent = ''; leftButton.textContent = 'Test'; rightButton.textContent = 'Nächstes Wort'; showNewTrainingWord(); }
+        function handleLeftButtonClick() { if (currentMode === 'training') { switchToTestMode(); } else { switchToTrainingMode(); } }
+        function handleRightButtonClick() { if (currentMode === 'training') { showNewTrainingWord(); } else { startRecording(); } }
+        leftButton.addEventListener('click', handleLeftButtonClick); rightButton.addEventListener('click', handleRightButtonClick);
+        function openAdminMenu() { const pw = prompt("Admin-Passwort eingeben:"); if (pw !== ADMIN_PASSWORD) { alert("Falsches Passwort."); return; } const action = prompt("Aktion eingeben: 'reset' zum Zurücksetzen, 'set' zum Setzen einer Stufe."); if (action && action.toLowerCase() === 'reset') { localStorage.clear(); alert("Fortschritt wurde zurückgesetzt!"); location.reload(); } else if (action && action.toLowerCase() === 'set') { const newLevel = prompt("Höchste freigeschaltete Stufe eingeben:"); const levelNum = parseInt(newLevel); if (levelNum > 0 && levelNum <= stufen.length) { localStorage.setItem('hoechsteLeseStufe', levelNum); localStorage.setItem('aktuelleLeseStufe', levelNum); alert(`Fortschritt auf Stufe ${levelNum} gesetzt!`); location.reload(); } else { alert("Ungültige Stufennummer."); } } }
+        topUiPanel.addEventListener('click', () => { clearTimeout(adminTapTimer); adminTapCount++; if (adminTapCount >= 7) { adminTapCount = 0; openAdminMenu(); } adminTapTimer = setTimeout(() => { adminTapCount = 0; }, 1500); });
+        function appStarten() { const gespeicherteHoechsteStufe = localStorage.getItem('hoechsteLeseStufe'); const gespeicherteAktuelleStufe = localStorage.getItem('aktuelleLeseStufe'); hoechsteStufe = gespeicherteHoechsteStufe ? parseInt(gespeicherteHoechsteStufe) : 1; let startStufe = gespeicherteAktuelleStufe ? parseInt(gespeicherteAktuelleStufe) : 1; if (startStufe > hoechsteStufe) startStufe = hoechsteStufe; ladeStufe(startStufe); switchToTrainingMode(); }
+        appStarten();
+    </script>
+</body>
+</html>
