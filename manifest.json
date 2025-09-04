@@ -1,7 +1,7 @@
 {
   "name": "Lesen lernen",
   "short_name": "Lesen",
-  "start_url": "index.html",
+  "start_url": ".",
   "display": "fullscreen",
   "background_color": "#f0f8ff",
   "theme_color": "#008CBA",
@@ -15,3 +15,4 @@
   ]
 
 }
+
