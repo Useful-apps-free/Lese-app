@@ -1,7 +1,7 @@
 {
   "name": "Lesen lernen",
   "short_name": "Lesen",
-  "start_url": "lese-app.html",
+  "start_url": "index.html",
   "display": "fullscreen",
   "background_color": "#f0f8ff",
   "theme_color": "#008CBA",
@@ -13,4 +13,5 @@
       "type": "image/png"
     }
   ]
+
 }
