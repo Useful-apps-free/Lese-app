@@ -53,96 +53,18 @@
         let adminTapTimer;
         
         // --- DATEN ---
-        // NEU: Die Stufen wurden aus Ihrer liste.txt generiert
-        const stufen = [
-            ["der", "die", "und", "in", "den", "von", "zu", "das", "mit", "sich"],
-            ["des", "auf", "für", "ist", "im", "dem", "nicht", "ein", "eine", "als"],
-            ["auch", "es", "an", "werden", "aus", "er", "hat", "dass", "sie", "nach"],
-            ["wird", "bei", "einer", "um", "am", "sind", "noch", "wie", "einem", "über"],
-            ["einen", "so", "zum", "war", "haben", "nur", "oder", "aber", "vor", "zur"],
-            ["bis", "mehr", "durch", "man", "sein", "wurde", "sei", "Prozent", "hatte", "kann"],
-            ["gegen", "vom", "können", "schon", "wenn", "habe", "seine", "ihre", "dann", "unter"],
-            ["wir", "soll", "ich", "eines", "Jahr", "zwei", "Jahren", "diese", "dieser", "wieder"],
-            ["keine", "Uhr", "seiner", "worden", "will", "zwischen", "immer", "was", "sagte", "gibt"],
-            ["alle", "diesem", "seit", "muß", "wurden", "beim", "doch", "jetzt", "waren", "drei"],
-            ["Jahre", "neue", "neuen", "damit", "bereits", "da", "ihr", "seinen", "müssen", "ab"],
-            ["ihrer", "ohne", "sondern", "selbst", "ersten", "nun", "etwa", "heute", "ihren", "weil"],
-            ["ihm", "seien", "Menschen", "Deutschland", "anderen", "werde", "rund", "Ende", "jedoch", "Zeit"],
-            ["sollen", "ins", "seinem", "uns", "Stadt", "geht", "sehr", "hier", "ganz", "erst"],
-            ["wollen", "Berlin", "allem", "sowie", "hatten", "kein", "deutschen", "machen", "lassen", "andere"],
-            ["ob", "dieses", "steht", "dabei", "wegen", "weiter", "denn", "beiden", "einmal", "etwas"],
-            ["nichts", "allerdings", "vier", "gut", "viele", "wo", "viel", "dort", "alles", "wäre"],
-            ["kommt", "vergangenen", "denen", "fast", "fünf", "könnte", "hätten", "Frau", "kommen", "diesen"],
-            ["letzten", "zwar", "großen", "dazu", "Mann", "sollte", "würde", "also", "bisher", "Leben"],
-            ["Welt", "konnte", "ihrem", "Frauen", "während", "Land", "zehn", "würden", "stehen", "ja"],
-            ["heißt", "dies", "zurück", "Kinder", "dessen", "ihnen", "deren", "sogar", "Frage", "gewesen"],
-            ["erste", "gab", "liegt", "gar", "davon", "gestern", "geben", "Teil", "Polizei", "hätte"],
-            ["eigenen", "kaum", "sieht", "große", "weitere", "sehen", "macht", "Angaben", "weniger", "gerade"],
-            ["läßt", "Geld", "deutsche", "allen", "darauf", "wohl", "später", "könne", "deshalb", "aller"],
-            ["kam", "Arbeit", "mich", "gegenüber", "nächsten", "bleibt", "wenig", "lange", "gemacht", "wer"],
-            ["Fall", "mir", "gehen", "Berliner", "mal", "Weg", "wollte", "sechs", "keinen", "Woche"],
-            ["dagegen", "alten", "möglich", "gilt", "erklärte", "müsse", "könnten", "Geschichte", "zusammen", "finden"],
-            ["Tag", "Art", "erhalten", "Wochen", "jeder", "nie", "bleiben", "besonders", "Jahres", "zunächst"],
-            ["derzeit", "allein", "deutlich", "Entwicklung", "weiß", "einige", "sollten", "geworden", "statt", "Platz"],
-            ["inzwischen", "Freitag", "seines", "Montag", "Europa", "schließlich", "Sonntag", "einfach", "gehört", "eher"],
-            ["oft", "Zahl", "neben", "hält", "weit", "meisten", "Thema", "zeigt", "zweiten", "Januar"],
-            ["insgesamt", "je", "mußte", "Anfang", "hinter", "ebenfalls", "ging", "Mitarbeiter", "darüber", "vielen"],
-            ["Ziel", "darf", "Seite", "fest", "hin", "erklärt", "Namen", "Haus", "Mittwoch", "damals"],
-            ["Dienstag", "Hilfe", "Mai", "Markt", "Tage", "Donnerstag", "halten", "gleich", "nehmen", "solche"],
-            ["Entscheidung", "besser", "alte", "Leute", "Samstag", "sagen", "System", "März", "tun", "Monaten"],
-            ["kleinen", "lang", "knapp", "bringen", "wissen", "Kosten", "Erfolg", "bekannt", "findet", "daran"],
-            ["künftig", "acht", "schnell", "Grund", "scheint", "Zukunft", "Stuttgart", "bin", "liegen", "Gruppe"],
-            ["Rolle", "stellt", "Juni", "sieben", "September", "nämlich", "Männer", "Oktober", "überhaupt", "eigene"],
-            ["gegeben", "außerdem", "Stunden", "eigentlich", "Meter", "ließ", "Probleme", "vielleicht", "ebenso", "Bereich"],
-            ["Beispiel", "Höhe", "Familie", "Bild", "Ländern", "Tagen", "schwer", "zuvor", "genau", "April"],
-            ["stellen", "neu", "erwartet", "sicher", "führen", "mehrere", "Programm", "offenbar", "weiteren", "natürlich"],
-            ["stark", "Dezember", "Juli", "ganze", "kommenden", "Kunden", "bekommen", "eben", "kleine", "trotz"],
-            ["wirklich", "Lage", "Länder", "leicht", "gekommen", "Spiel", "laut", "November", "kurz", "führt"],
-            ["innerhalb", "unsere", "meint", "Form", "anders", "völlig", "gute", "bislang", "August", "Hand"],
-            ["jede", "Film", "Minuten", "erreicht", "Musik", "Kritik", "Mitte", "Verfügung", "Buch", "dürfen"],
-            ["jeweils", "einigen", "Umsatz", "spielen", "Daten", "welche", "müßten", "hieß", "paar", "nachdem"],
-            ["Kunst", "gebracht", "Problem", "jeden", "recht", "erneut", "längst", "Eltern", "Beginn", "besteht"],
-            ["mindestens", "bietet", "Bürger", "Trainer", "bald", "Fragen", "klar", "Seiten", "gehören", "erstmals"],
-            ["Februar", "zeigen", "Titel", "Stück", "größten", "setzt", "Wert", "möchte", "daher", "wolle"],
-            ["lediglich", "Nacht", "nimmt", "Firma", "zuletzt", "Werk", "hohen", "leben", "Kirche", "weiterhin"],
-            ["gebe", "gestellt", "Mitglieder", "Rahmen", "zweite", "Paris", "Situation", "gefunden", "Wochenende", "Wasser"],
-            ["Recht", "sonst", "stand", "Hälfte", "Möglichkeit", "versucht", "blieb", "junge", "Straße", "Sache"],
-            ["arbeiten", "Monate", "Mutter", "berichtet", "letzte", "wollten", "zwölf", "zumindest", "Wahl", "genug"],
-            ["Weise", "Vater", "Bericht", "hoch", "beginnt", "Wort", "obwohl", "Kopf", "spielt", "Interesse"],
-            ["Westen", "verloren", "Preis", "jedem", "erreichen", "setzen", "spricht", "früher", "teilte", "zudem"],
-            ["einzelnen", "bereit", "Blick", "Druck", "Kilometer", "gemeinsam", "Bedeutung", "Chance", "besten", "Ansicht"],
-            ["endlich", "Stelle", "direkt", "solchen", "solle", "Einsatz", "richtig", "größte", "sofort", "neuer"],
-            ["ehemaligen", "unserer", "dürfte", "schaffen", "Augen", "Internet", "Raum", "Mannschaft", "neun", "kamen"],
-            ["Ausstellung", "Zeiten", "einzige", "meine", "Verfahren", "Angebot", "Richtung", "Projekt", "niemand", "weder"],
-            ["tatsächlich", "Personen", "geführt", "Gespräch", "Kreis", "Hamburger", "Schule", "guten", "Hauptstadt", "durchaus"],
-            ["Zusammenarbeit", "darin", "Schritt", "meist", "groß", "zufolge", "Sprache", "Punkte", "Vergleich", "genommen"],
-            ["gleichen", "du", "verschiedenen", "Kollegen", "neues", "Bürgermeister", "Angst", "stellte", "Sommer", "danach"],
-            ["anderer", "gesagt", "Sicherheit", "Macht", "Bau", "handelt", "Folge", "Bilder", "lag", "Osten"],
-            ["Handel", "sprach", "Aufgabe", "Chef", "frei", "dennoch", "hohe", "Firmen", "Mädchen", "entwickelt"],
-            ["fand", "bringt", "Hause", "Gefahr", "per", "zugleich", "früheren", "dadurch", "ganzen", "Abend"],
-            ["erzählt", "Streit", "jedenfalls", "gesehen", "darunter", "Spieler", "forderte", "Meinung", "wenigen", "sowohl"],
-            ["meinte", "mag", "Auto", "Lösung", "Boden", "hinaus", "Sohn", "bevor", "Peter", "mußten"],
-            ["keiner", "Ort", "braucht", "Kind", "Verein", "sprechen", "gleichzeitig", "sogenannten", "geplant", "Mittel"],
-            ["her", "Mensch", "großer", "wenige", "dritten", "nahm", "bedeutet", "Feld", "Bank", "oben"],
-            ["gesetzt", "Ausland", "Vertreter", "jedes", "ziehen", "berichtete", "aufgrund", "warum", "Kindern", "heraus"],
-            ["heutigen", "Anteil", "Herr", "Liebe", "rechnen", "fällt", "Sicht", "Idee", "verlassen", "Leiter"],
-            ["Bühne", "offen", "stets", "Theater", "ändern", "entschieden", "Geschäft", "Tochter", "gelten", "erwarten"],
-            ["läuft", "fordert", "Japan", "Sieg", "Stimmen", "wählen", "gewinnen", "bieten", "Nähe", "jährlich"],
-            ["Bremen", "Schüler", "Rede", "Zuschauer", "hingegen", "anderes", "Führung", "Besucher", "Drittel", "immerhin"],
-            ["Kultur", "betonte", "mittlerweile", "Saison", "suchen", "Zahlen", "Roman", "gesamte", "indem", "Stunde"],
-            ["ehemalige", "Auftrag", "entscheiden", "genannt", "tragen", "langen", "häufig", "alt", "Luft", "übernehmen"],
-            ["stärker", "ohnehin", "zeigte", "geplanten", "Reihe", "darum", "verhindern", "begann", "verkauft", "wichtig"],
-            ["sah", "gesamten", "verwendet", "vorbei", "helfen", "Folgen"]
-        ];
-
-        // NEU: Custom Lists übersichtlich formatiert
-        const customLists = {
-            "Orte": ["Hannover", "Hamburg", "Berlin", "München", "Köln", "Deutschland"],
-            "Namen": ["Lisa", "Markus", "Felix", "Emily"]
-        };
+        const stufen = [ ["der", "die", "und", "in", "den", "von", "zu", "das", "mit", "sich"], ["des", "auf", "für", "ist", "im", "dem", "nicht", "ein", "eine", "als"], ["auch", "es", "an", "werden", "aus", "er", "hat", "dass", "sie", "nach"], ["wird", "bei", "einer", "um", "am", "sind", "noch", "wie", "einem", "über"], ["einen", "so", "zum", "war", "haben", "nur", "oder", "aber", "vor", "zur"], ["bis", "mehr", "durch", "man", "sein", "wurde", "sei", "Prozent", "hatte", "kann"], ["gegen", "vom", "können", "schon", "wenn", "habe", "seine", "ihre", "dann", "unter"], ["wir", "soll", "ich", "eines", "Jahr", "zwei", "Jahren", "diese", "dieser", "wieder"], ["keine", "Uhr", "seiner", "worden", "will", "zwischen", "immer", "was", "sagte", "gibt"], ["alle", "diesem", "seit", "muß", "wurden", "beim", "doch", "jetzt", "waren", "drei"], ["Jahre", "neue", "neuen", "damit", "bereits", "da", "ihr", "seinen", "müssen", "ab"], ["ihrer", "ohne", "sondern", "selbst", "ersten", "nun", "etwa", "heute", "ihren", "weil"], ["ihm", "seien", "Menschen", "Deutschland", "anderen", "werde", "rund", "Ende", "jedoch", "Zeit"], ["sollen", "ins", "seinem", "uns", "Stadt", "geht", "sehr", "hier", "ganz", "erst"], ["wollen", "Berlin", "allem", "sowie", "hatten", "kein", "deutschen", "machen", "lassen", "andere"], ["ob", "dieses", "steht", "dabei", "wegen", "weiter", "denn", "beiden", "einmal", "etwas"], ["nichts", "allerdings", "vier", "gut", "viele", "wo", "viel", "dort", "alles", "wäre"], ["kommt", "vergangenen", "denen", "fast", "fünf", "könnte", "hätten", "Frau", "kommen", "diesen"], ["letzten", "zwar", "großen", "dazu", "Mann", "sollte", "würde", "also", "bisher", "Leben"], ["Welt", "konnte", "ihrem", "Frauen", "während", "Land", "zehn", "würden", "stehen", "ja"], ["heißt", "dies", "zurück", "Kinder", "dessen", "ihnen", "deren", "sogar", "Frage", "gewesen"], ["erste", "gab", "liegt", "gar", "davon", "gestern", "geben", "Teil", "Polizei", "hätte"], ["eigenen", "kaum", "sieht", "große", "weitere", "sehen", "macht", "Angaben", "weniger", "gerade"], ["läßt", "Geld", "deutsche", "allen", "darauf", "wohl", "später", "könne", "deshalb", "aller"], ["kam", "Arbeit", "mich", "gegenüber", "nächsten", "bleibt", "wenig", "lange", "gemacht", "wer"], ["Fall", "mir", "gehen", "Berliner", "mal", "Weg", "wollte", "sechs", "keinen", "Woche"], ["dagegen", "alten", "möglich", "gilt", "erklärte", "müsse", "könnten", "Geschichte", "zusammen", "finden"], ["Tag", "Art", "erhalten", "Wochen", "jeder", "nie", "bleiben", "besonders", "Jahres", "zunächst"], ["derzeit", "allein", "deutlich", "Entwicklung", "weiß", "einige", "sollten", "geworden", "statt", "Platz"], ["inzwischen", "Freitag", "seines", "Montag", "Europa", "schließlich", "Sonntag", "einfach", "gehört", "eher"], ["oft", "Zahl", "neben", "hält", "weit", "meisten", "Thema", "zeigt", "zweiten", "Januar"], ["insgesamt", "je", "mußte", "Anfang", "hinter", "ebenfalls", "ging", "Mitarbeiter", "darüber", "vielen"], ["Ziel", "darf", "Seite", "fest", "hin", "erklärt", "Namen", "Haus", "Mittwoch", "damals"], ["Dienstag", "Hilfe", "Mai", "Markt", "Tage", "Donnerstag", "halten", "gleich", "nehmen", "solche"], ["Entscheidung", "besser", "alte", "Leute", "Samstag", "sagen", "System", "März", "tun", "Monaten"], ["kleinen", "lang", "knapp", "bringen", "wissen", "Kosten", "Erfolg", "bekannt", "findet", "daran"], ["künftig", "acht", "schnell", "Grund", "scheint", "Zukunft", "Stuttgart", "bin", "liegen", "Gruppe"], ["Rolle", "stellt", "Juni", "sieben", "September", "nämlich", "Männer", "Oktober", "überhaupt", "eigene"], ["gegeben", "außerdem", "Stunden", "eigentlich", "Meter", "ließ", "Probleme", "vielleicht", "ebenso", "Bereich"], ["Beispiel", "Höhe", "Familie", "Bild", "Ländern", "Tagen", "schwer", "zuvor", "genau", "April"], ["stellen", "neu", "erwartet", "sicher", "führen", "mehrere", "Programm", "offenbar", "weiteren", "natürlich"], ["stark", "Dezember", "Juli", "ganze", "kommenden", "Kunden", "bekommen", "eben", "kleine", "trotz"], ["wirklich", "Lage", "Länder", "leicht", "gekommen", "Spiel", "laut", "November", "kurz", "führt"], ["innerhalb", "unsere", "meint", "Form", "anders", "völlig", "gute", "bislang", "August", "Hand"], ["jede", "Film", "Minuten", "erreicht", "Musik", "Kritik", "Mitte", "Verfügung", "Buch", "dürfen"], ["jeweils", "einigen", "Umsatz", "spielen", "Daten", "welche", "müßten", "hieß", "paar", "nachdem"], ["Kunst", "gebracht", "Problem", "jeden", "recht", "erneut", "längst", "Eltern", "Beginn", "besteht"], ["mindestens", "bietet", "Bürger", "Trainer", "bald", "Fragen", "klar", "Seiten", "gehören", "erstmals"], ["Februar", "zeigen", "Titel", "Stück", "größten", "setzt", "Wert", "möchte", "daher", "wolle"], ["lediglich", "Nacht", "nimmt", "Firma", "zuletzt", "Werk", "hohen", "leben", "Kirche", "weiterhin"], ["gebe", "gestellt", "Mitglieder", "Rahmen", "zweite", "Paris", "Situation", "gefunden", "Wochenende", "Wasser"], ["Recht", "sonst", "stand", "Hälfte", "Möglichkeit", "versucht", "blieb", "junge", "Straße", "Sache"], ["arbeiten", "Monate", "Mutter", "berichtet", "letzte", "wollten", "zwölf", "zumindest", "Wahl", "genug"], ["Weise", "Vater", "Bericht", "hoch", "beginnt", "Wort", "obwohl", "Kopf", "spielt", "Interesse"], ["Westen", "verloren", "Preis", "jedem", "erreichen", "setzen", "spricht", "früher", "teilte", "zudem"], ["einzelnen", "bereit", "Blick", "Druck", "Kilometer", "gemeinsam", "Bedeutung", "Chance", "besten", "Ansicht"], ["endlich", "Stelle", "direkt", "solchen", "solle", "Einsatz", "richtig", "größte", "sofort", "neuer"], ["ehemaligen", "unserer", "dürfte", "schaffen", "Augen", "Internet", "Raum", "Mannschaft", "neun", "kamen"], ["Ausstellung", "Zeiten", "einzige", "meine", "Verfahren", "Angebot", "Richtung", "Projekt", "niemand", "weder"], ["tatsächlich", "Personen", "geführt", "Gespräch", "Kreis", "Hamburger", "Schule", "guten", "Hauptstadt", "durchaus"], ["Zusammenarbeit", "darin", "Schritt", "meist", "groß", "zufolge", "Sprache", "Punkte", "Vergleich", "genommen"], ["gleichen", "du", "verschiedenen", "Kollegen", "neues", "Bürgermeister", "Angst", "stellte", "Sommer", "danach"], ["anderer", "gesagt", "Sicherheit", "Macht", "Bau", "handelt", "Folge", "Bilder", "lag", "Osten"], ["Handel", "sprach", "Aufgabe", "Chef", "frei", "dennoch", "hohe", "Firmen", "Mädchen", "entwickelt"], ["fand", "bringt", "Hause", "Gefahr", "per", "zugleich", "früheren", "dadurch", "ganzen", "Abend"], ["erzählt", "Streit", "jedenfalls", "gesehen", "darunter", "Spieler", "forderte", "Meinung", "wenigen", "sowohl"], ["meinte", "mag", "Auto", "Lösung", "Boden", "hinaus", "Sohn", "bevor", "Peter", "mußten"], ["keiner", "Ort", "braucht", "Kind", "Verein", "sprechen", "gleichzeitig", "sogenannten", "geplant", "Mittel"], ["her", "Mensch", "großer", "wenige", "dritten", "nahm", "bedeutet", "Feld", "Bank", "oben"], ["gesetzt", "Ausland", "Vertreter", "jedes", "ziehen", "berichtete", "aufgrund", "warum", "Kindern", "heraus"], ["heutigen", "Anteil", "Herr", "Liebe", "rechnen", "fällt", "Sicht", "Idee", "verlassen", "Leiter"], ["Bühne", "offen", "stets", "Theater", "ändern", "entschieden", "Geschäft", "Tochter", "gelten", "erwarten"], ["läuft", "fordert", "Japan", "Sieg", "Stimmen", "wählen", "gewinnen", "bieten", "Nähe", "jährlich"], ["Bremen", "Schüler", "Rede", "Zuschauer", "hingegen", "anderes", "Führung", "Besucher", "Drittel", "immerhin"], ["Kultur", "betonte", "mittlerweile", "Saison", "suchen", "Zahlen", "Roman", "gesamte", "indem", "Stunde"], ["ehemalige", "Auftrag", "entscheiden", "genannt", "tragen", "langen", "häufig", "alt", "Luft", "übernehmen"], ["stärker", "ohnehin", "zeigte", "geplanten", "Reihe", "darum", "verhindern", "begann", "verkauft", "wichtig"], ["sah", "gesamten", "verwendet", "vorbei", "helfen", "Folgen"] ];
+        const customLists = { "Orte": ["Hannover", "Hamburg", "Berlin", "München", "Köln", "Deutschland"], "Namen": ["Lisa", "Markus", "Felix", "Emily"] };
+        
         let aktuelleStufe = 1, hoechsteStufe = 1, currentTestType = 'stufe', currentCustomList = '', wordsOfCurrentLevel = [], wordsToTest = [], currentWord = '', currentMode = 'training', wasCorrect = false, totalWordsInTest = 0;
+        
+        // ★★★ HIER SIND DIE NEUEN/GEÄNDERTEN VARIABLEN ★★★
+        let failedAttempts = 0;
+        let resultReceived = false; // Die "Merk-Variable"
+
         const wordDisplay = document.getElementById('word-display'), levelDisplay = document.getElementById('level-display'), topUiPanel = document.getElementById('top-ui-panel'), progressDisplay = document.getElementById('progress-display'), feedbackDisplay = document.getElementById('feedback-display'), leftButton = document.getElementById('left-button'), rightButton = document.getElementById('right-button'), hamburgerButton = document.getElementById('hamburger-button'), sideMenu = document.getElementById('side-menu'), menuProgress = document.getElementById('menu-progress'), levelList = document.getElementById('level-list'), customListContainer = document.getElementById('custom-list'), successOverlay = document.getElementById('success-overlay'), successMessage = document.getElementById('success-message');
         const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition; const recognition = new SpeechRecognition(); recognition.lang = 'de-DE'; recognition.interimResults = false;
+        
         function shuffle(array) { for (let i = array.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1)); [array[i], array[j]] = [array[j], array[i]]; } }
         function speak(text) { if (!('speechSynthesis' in window)) return; const utterance = new SpeechSynthesisUtterance(text); utterance.lang = 'de-DE'; utterance.rate = 0.85; window.speechSynthesis.cancel(); window.speechSynthesis.speak(utterance); }
         function showNewTrainingWord() { if (wordsOfCurrentLevel.length === 0) return; let availableWords = wordsOfCurrentLevel.filter(word => word !== currentWord); if (availableWords.length === 0) availableWords = wordsOfCurrentLevel; const randomIndex = Math.floor(Math.random() * availableWords.length); currentWord = availableWords[randomIndex]; wordDisplay.textContent = currentWord; speak(currentWord); }
@@ -151,12 +73,80 @@
         function testAbschliessen() { let successText = "🎉 Super gemacht! 🎉"; if (currentTestType === 'stufe') { const naechsteStufe = aktuelleStufe + 1; if (naechsteStufe > hoechsteStufe) { hoechsteStufe = naechsteStufe; localStorage.setItem('hoechsteLeseStufe', hoechsteStufe); } if (naechsteStufe > stufen.length) { successText = "🎉 ALLES GESCHAFFT! 🎉"; } else { successText = `🎆 Stufe ${naechsteStufe}!!! 🎆`; } setTimeout(() => { successOverlay.style.display = 'none'; if (naechsteStufe <= stufen.length) { ladeStufe(naechsteStufe); switchToTrainingMode(); } }, 3000); } else { localStorage.setItem(`customList_${currentCustomList}_completed`, 'true'); setTimeout(() => { successOverlay.style.display = 'none'; switchToTrainingMode(); }, 3000); } successMessage.textContent = successText; successOverlay.style.display = 'flex'; }
         function updateProgressDisplay() { const remainingWords = wordsToTest.length; const completedWords = totalWordsInTest - remainingWords; progressDisplay.textContent = `${completedWords} von ${totalWordsInTest}`; }
         function switchToTestMode() { currentMode = 'test'; progressDisplay.style.display = 'block'; wordDisplay.style.color = 'black'; feedbackDisplay.textContent = 'Drücke Sprechen und lies vor'; leftButton.textContent = 'Training'; rightButton.textContent = 'Sprechen 🎤'; let currentTestWords = [...wordsOfCurrentLevel]; if (currentTestType === 'stufe' && aktuelleStufe > 1) { const previousLevels = stufen.slice(0, aktuelleStufe - 1); const previousWordsPool = previousLevels.flat(); shuffle(previousWordsPool); const bonusWords = previousWordsPool.slice(0, 5); currentTestWords.push(...bonusWords); } wordsToTest = currentTestWords; shuffle(wordsToTest); totalWordsInTest = wordsToTest.length; updateProgressDisplay(); showNextTestWord(); }
-        function showNextTestWord() { if (wordsToTest.length > 0) { currentWord = wordsToTest[0]; wordDisplay.textContent = currentWord; wordDisplay.style.color = 'black'; feedbackDisplay.textContent = 'Drücke Sprechen und lies vor'; } else { setTimeout(testAbschliessen, 500); } }
-        recognition.onresult = (event) => { recognition.stop(); const spokenText = event.results[0][0].transcript.trim().toLowerCase(); if (spokenText === currentWord.toLowerCase()) { wasCorrect = true; feedbackDisplay.textContent = 'Super, richtig!'; wordDisplay.style.color = '#4CAF50'; wordsToTest.shift(); updateProgressDisplay(); setTimeout(showNextTestWord, 1500); } else { feedbackDisplay.textContent = `Fast! Ich habe "${spokenText}" gehört. Versuch es nochmal!`; wordDisplay.style.color = '#dc3545'; } };
-        function startRecording() { wasCorrect = false; feedbackDisplay.textContent = 'Ich höre zu... 👂'; rightButton.disabled = true; try { recognition.start(); } catch(e) { console.error("Aufnahme läuft bereits."); rightButton.disabled = false; } }
-        recognition.onend = () => { rightButton.disabled = false; if (!wasCorrect && currentMode === 'test') { feedbackDisplay.textContent = 'Drücke Sprechen und lies vor'; } };
-        recognition.onerror = (event) => { feedbackDisplay.textContent = "Hoppla, da gab es einen Fehler."; console.error("Speech Recognition Error:", event.error); };
-        function populateLevelList() { levelList.innerHTML = ''; menuProgress.textContent = `Stufe ${aktuelleStufe} von ${stufen.length}`; for (let i = 1; i <= stufen.length; i++) { const item = document.createElement('div'); item.className = 'list-item'; item.textContent = `Stufe ${i}`; if (i > hoechsteStufe) { item.classList.add('locked'); } else { item.addEventListener('click', () => { ladeStufe(i, true); switchToTrainingMode(); sideMenu.classList.remove('open'); }); } levelList.appendChild(item); } }
+        
+        function showNextTestWord() { 
+            if (wordsToTest.length > 0) { 
+                currentWord = wordsToTest[0]; 
+                wordDisplay.textContent = currentWord; 
+                wordDisplay.style.color = 'black'; 
+                // ★★★ Zähler für jedes neue Wort zurücksetzen ★★★
+                failedAttempts = 0; 
+                feedbackDisplay.textContent = 'Drücke Sprechen und lies vor'; 
+            } else { 
+                setTimeout(testAbschliessen, 500); 
+            } 
+        }
+        
+        // ★★★ HIER IST DIE GESAMTE NEUE PRÜFLOGIK ★★★
+        recognition.onresult = (event) => {
+            resultReceived = true; // Ein Ergebnis kam an, wir vermerken das.
+            recognition.stop();
+            const spokenText = event.results[0][0].transcript.trim().toLowerCase();
+            const targetWord = currentWord.toLowerCase();
+            let isCorrect = false;
+
+            if (spokenText === targetWord) { isCorrect = true; } 
+            else if (failedAttempts >= 2 && spokenText.includes(targetWord)) { isCorrect = true; }
+
+            if (isCorrect) {
+                wasCorrect = true;
+                feedbackDisplay.textContent = 'Super, richtig!';
+                wordDisplay.style.color = '#4CAF50';
+                wordsToTest.shift();
+                updateProgressDisplay();
+                setTimeout(showNextTestWord, 1500);
+            } else {
+                failedAttempts++;
+                wordDisplay.style.color = '#dc3545';
+                if (failedAttempts >= 2) {
+                    feedbackDisplay.textContent = `Versuch es mal in einem Satz!`;
+                } else {
+                    feedbackDisplay.textContent = `Fast! Ich habe "${spokenText}" gehört.`;
+                }
+            }
+        };
+
+        function startRecording() { 
+            wasCorrect = false; 
+            resultReceived = false; // Merk-Variable vor jeder Aufnahme zurücksetzen
+            feedbackDisplay.textContent = 'Ich höre zu... 👂'; 
+            rightButton.disabled = true; 
+            try { recognition.start(); } 
+            catch(e) { console.error("Aufnahme läuft bereits."); rightButton.disabled = false; } 
+        }
+
+     recognition.onend = () => { 
+    rightButton.disabled = false; 
+    // Prüft, ob die Aufnahme beendet wurde, OHNE dass ein Ergebnis ankam.
+    if (currentMode === 'test' && !wasCorrect && !resultReceived) {
+        failedAttempts++; // "Nichts gehört" ist auch ein Fehlversuch
+        // Die Rotfärbung wurde hier entfernt
+        if (failedAttempts >= 2) {
+            feedbackDisplay.textContent = 'Versuch es mal in einem Satz!';
+        } else {
+            feedbackDisplay.textContent = 'Bitte nochmal versuchen!';
+        }
+    }
+};
+
+        // ★★★ ENDE DER NEUEN PRÜFLOGIK ★★★
+        
+        recognition.onerror = (event) => { 
+            feedbackDisplay.textContent = "Hoppla, da gab es einen Fehler."; 
+            console.error("Speech Recognition Error:", event.error); 
+        };
+        
+        function populateLevelList() { levelList.innerHTML = ''; menuProgress.textContent = `Stufe ${hoechsteStufe} von ${stufen.length}`; for (let i = 1; i <= stufen.length; i++) { const item = document.createElement('div'); item.className = 'list-item'; item.textContent = `Stufe ${i}`; if (i > hoechsteStufe) { item.classList.add('locked'); } else { item.addEventListener('click', () => { ladeStufe(i, true); switchToTrainingMode(); sideMenu.classList.remove('open'); }); } levelList.appendChild(item); } }
         function populateCustomLists() { customListContainer.innerHTML = ''; for (const listenName in customLists) { const item = document.createElement('div'); item.className = 'list-item'; item.textContent = listenName; if (localStorage.getItem(`customList_${listenName}_completed`) === 'true') { item.classList.add('completed'); } item.addEventListener('click', () => { ladeCustomList(listenName); switchToTrainingMode(); sideMenu.classList.remove('open'); }); customListContainer.appendChild(item); } }
         hamburgerButton.addEventListener('click', () => { populateLevelList(); populateCustomLists(); sideMenu.classList.toggle('open'); });
         function switchToTrainingMode() { currentMode = 'training'; progressDisplay.style.display = 'none'; wordDisplay.style.color = 'black'; feedbackDisplay.textContent = ''; leftButton.textContent = 'Test'; rightButton.textContent = 'Nächstes Wort'; showNewTrainingWord(); }
@@ -165,9 +155,18 @@
         leftButton.addEventListener('click', handleLeftButtonClick); rightButton.addEventListener('click', handleRightButtonClick);
         function openAdminMenu() { const pw = prompt("Admin-Passwort eingeben:"); if (pw !== ADMIN_PASSWORD) { alert("Falsches Passwort."); return; } const action = prompt("Aktion eingeben: 'reset' zum Zurücksetzen, 'set' zum Setzen einer Stufe."); if (action && action.toLowerCase() === 'reset') { localStorage.clear(); alert("Fortschritt wurde zurückgesetzt!"); location.reload(); } else if (action && action.toLowerCase() === 'set') { const newLevel = prompt("Höchste freigeschaltete Stufe eingeben:"); const levelNum = parseInt(newLevel); if (levelNum > 0 && levelNum <= stufen.length) { localStorage.setItem('hoechsteLeseStufe', levelNum); localStorage.setItem('aktuelleLeseStufe', levelNum); alert(`Fortschritt auf Stufe ${levelNum} gesetzt!`); location.reload(); } else { alert("Ungültige Stufennummer."); } } }
         topUiPanel.addEventListener('click', () => { clearTimeout(adminTapTimer); adminTapCount++; if (adminTapCount >= 7) { adminTapCount = 0; openAdminMenu(); } adminTapTimer = setTimeout(() => { adminTapCount = 0; }, 1500); });
-        function appStarten() { const gespeicherteHoechsteStufe = localStorage.getItem('hoechsteLeseStufe'); const gespeicherteAktuelleStufe = localStorage.getItem('aktuelleLeseStufe'); hoechsteStufe = gespeicherteHoechsteStufe ? parseInt(gespeicherteHoechsteStufe) : 1; let startStufe = gespeicherteAktuelleStufe ? parseInt(gespeicherteAktuelleStufe) : 1; if (startStufe > hoechsteStufe) startStufe = hoechsteStufe; ladeStufe(startStufe); switchToTrainingMode(); }
+        
+        function appStarten() { 
+            const gespeicherteHoechsteStufe = localStorage.getItem('hoechsteLeseStufe'); 
+            const gespeicherteAktuelleStufe = localStorage.getItem('aktuelleLeseStufe'); 
+            hoechsteStufe = gespeicherteHoechsteStufe ? parseInt(gespeicherteHoechsteStufe) : 1; 
+            let startStufe = gespeicherteAktuelleStufe ? parseInt(gespeicherteAktuelleStufe) : 1; 
+            if (startStufe > hoechsteStufe) startStufe = hoechsteStufe; 
+            ladeStufe(startStufe); 
+            switchToTrainingMode(); 
+        }
+        
         appStarten();
     </script>
 </body>
-
 </html>
