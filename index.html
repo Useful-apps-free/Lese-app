@@ -7,9 +7,10 @@
     <link rel="manifest" href="manifest.json">
     <title>Lesen lernen</title>
     <style>
+        /* CSS bleibt unverändert, mit Ergänzungen für den Timer */
         html, body { margin: 0; padding: 0; width: 100%; height: 100%; overflow: hidden; font-family: sans-serif; background-color: #f0f8ff; }
         #app-container { display: flex; justify-content: center; align-items: center; width: 100vw; height: 100vh; text-align: center; }
-        #top-ui-panel { position: fixed; top: 15px; left: 50%; transform: translateX(-50%); text-align: center; z-index: 10; width: 80%; }
+        #top-ui-panel { position: fixed; top: 15px; left: 50%; transform: translateX(-50%); text-align: center; z-index: 10; cursor: pointer; width: 80%; }
         #level-display { font-size: 22px; font-weight: bold; background-color: rgba(255, 255, 255, 0.8); padding: 5px 15px; border-radius: 15px; }
         #progress-display { font-size: 16px; font-weight: normal; margin-top: 5px; display: none; }
         #word-display { font-size: 15vw; font-weight: bold; }
@@ -17,7 +18,7 @@
         .side-button { position: fixed; top: 100px; width: 60px; height: calc(100vh - 120px); color: white; border: none; font-size: 30px; cursor: pointer; display: flex; justify-content: center; align-items: center; writing-mode: vertical-rl; text-orientation: mixed; border-radius: 15px; z-index: 9; }
         #left-button { left: 15px; background-color: #008CBA; }
         #right-button { right: 15px; background-color: #4CAF50; }
-        body.test-mode #right-button { display: none; }
+        body.test-mode #right-button { display: none; } /* Button im Testmodus ausblenden */
         #hamburger-button { position: fixed; top: 15px; left: 15px; font-size: 28px; cursor: pointer; background: none; border: none; z-index: 101; width: 40px; height: 40px; }
         #side-menu { position: fixed; top: 0; left: -35vw; width: 33.33vw; height: 100vh; background-color: #ffffff; box-shadow: 2px 0 10px rgba(0,0,0,0.2); transition: left 0.3s ease-in-out; z-index: 100; display: flex; flex-direction: column; }
         #side-menu.open { left: 0; }
@@ -36,33 +37,32 @@
         #success-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background-color: rgba(0, 0, 0, 0.7); display: none; justify-content: center; align-items: center; z-index: 200; }
         #success-message { color: white; font-size: 10vw; font-weight: bold; text-shadow: 0 0 20px #ffc107; }
         
+        /* NEU: Stile für den Timer-Balken */
         #timer-container {
             position: fixed;
-            top: 65px;
+            top: 65px; /* Unter der Stufen-Anzeige */
             left: 50%;
             transform: translateX(-50%);
-            /* ★★★ ANPASSUNG 1: Breite von 30% auf 42% erhöht ★★★ */
-            width: 42%; 
-            height: 8px;
+            width: 30%; /* Breite des Balkens */
+            height: 8px; /* Schmale Höhe */
             background-color: #e0e0e0;
             border-radius: 4px;
             overflow: hidden;
-            display: none;
+            display: none; /* Standardmäßig ausgeblendet */
         }
         #timer-bar {
             width: 100%;
             height: 100%;
-            background-color: #2196F3;
+            background-color: #2196F3; /* Blauer Ton */
             border-radius: 4px;
-            transition: width 2s linear;
+            transition: width 2s linear; /* 2 Sekunden Animation */
         }
     </style>
 </head>
 <body>
     <div id="top-ui-panel">
         <div id="level-display">Stufe 1</div>
-        <div id="timer-container"><div id="timer-bar"></div></div>
-        <div id="progress-display">0 von 10</div>
+        <div id="timer-container"><div id="timer-bar"></div></div> <div id="progress-display">0 von 10</div>
     </div>
     <div id="app-container"><div id="word-display">Start</div></div>
     <div id="feedback-display"></div>
@@ -79,11 +79,13 @@
         const stufen = [ ["der", "die", "und", "in", "den", "von", "zu", "das", "mit", "sich"], ["des", "auf", "für", "ist", "im", "dem", "nicht", "ein", "eine", "als"], ["auch", "es", "an", "werden", "aus", "er", "hat", "dass", "sie", "nach"], ["wird", "bei", "einer", "um", "am", "sind", "noch", "wie", "einem", "über"], ["einen", "so", "zum", "war", "haben", "nur", "oder", "aber", "vor", "zur"], ["bis", "mehr", "durch", "man", "sein", "wurde", "sei", "Prozent", "hatte", "kann"], ["gegen", "vom", "können", "schon", "wenn", "habe", "seine", "ihre", "dann", "unter"], ["wir", "soll", "ich", "eines", "Jahr", "zwei", "Jahren", "diese", "dieser", "wieder"], ["keine", "Uhr", "seiner", "worden", "will", "zwischen", "immer", "was", "sagte", "gibt"], ["alle", "diesem", "seit", "muß", "wurden", "beim", "doch", "jetzt", "waren", "drei"] /* ...restliche Stufen... */ ];
         const customLists = { "Orte": ["Hannover", "Hamburg", "Berlin", "München", "Köln", "Deutschland"], "Namen": ["Lisa", "Markus", "Felix", "Emily"] };
         
+        // --- VARIABLEN ---
         let aktuelleStufe = 1, hoechsteStufe = 1, currentTestType = 'stufe', currentCustomList = '', wordsOfCurrentLevel = [], wordsToTest = [], initialTestWords = [], currentWord = '', currentMode = 'training', wasCorrect = false, totalWordsInTest = 0;
-        let timer;
+        let timer; // NEU: Variable für den Timeout
         const wordDisplay = document.getElementById('word-display'), levelDisplay = document.getElementById('level-display'), topUiPanel = document.getElementById('top-ui-panel'), progressDisplay = document.getElementById('progress-display'), feedbackDisplay = document.getElementById('feedback-display'), leftButton = document.getElementById('left-button'), rightButton = document.getElementById('right-button'), hamburgerButton = document.getElementById('hamburger-button'), sideMenu = document.getElementById('side-menu'), menuProgress = document.getElementById('menu-progress'), levelList = document.getElementById('level-list'), customListContainer = document.getElementById('custom-list'), successOverlay = document.getElementById('success-overlay'), successMessage = document.getElementById('success-message'), timerContainer = document.getElementById('timer-container'), timerBar = document.getElementById('timer-bar');
         const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition; const recognition = new SpeechRecognition(); recognition.lang = 'de-DE'; recognition.interimResults = false;
         
+        // --- FUNKTIONEN ---
         function shuffle(array) { for (let i = array.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1)); [array[i], array[j]] = [array[j], array[i]]; } }
         function speak(text) { if (!('speechSynthesis' in window)) return; const utterance = new SpeechSynthesisUtterance(text); utterance.lang = 'de-DE'; utterance.rate = 0.85; window.speechSynthesis.cancel(); window.speechSynthesis.speak(utterance); }
         function showNewTrainingWord() { if (wordsOfCurrentLevel.length === 0) return; let availableWords = wordsOfCurrentLevel.filter(word => word !== currentWord); if (availableWords.length === 0) availableWords = wordsOfCurrentLevel; const randomIndex = Math.floor(Math.random() * availableWords.length); currentWord = availableWords[randomIndex]; wordDisplay.textContent = currentWord; speak(currentWord); }
@@ -93,10 +95,10 @@
         function updateProgressDisplay() { const remainingWords = wordsToTest.length; const completedWords = totalWordsInTest - remainingWords; progressDisplay.textContent = `${completedWords} von ${totalWordsInTest}`; }
         
         function switchToTestMode() { 
-            document.body.classList.add('test-mode');
+            document.body.classList.add('test-mode'); // Body-Klasse für CSS hinzufügen
             currentMode = 'test'; 
             progressDisplay.style.display = 'block'; 
-            timerContainer.style.display = 'block';
+            timerContainer.style.display = 'block'; // Timer einblenden
             wordDisplay.style.color = 'black'; 
             feedbackDisplay.textContent = ''; 
             leftButton.textContent = 'Training'; 
@@ -110,47 +112,42 @@
             } 
             wordsToTest = currentTestWords; 
             shuffle(wordsToTest); 
-            initialTestWords = [...wordsToTest];
+            initialTestWords = [...wordsToTest]; // Kopie für den Reset speichern
             totalWordsInTest = wordsToTest.length; 
             updateProgressDisplay(); 
             showNextTestWord(); 
         }
 
         function showNextTestWord() {
+            clearTimeout(timer); // Alten Timer löschen
             if (wordsToTest.length > 0) { 
                 currentWord = wordsToTest[0]; 
                 wordDisplay.textContent = currentWord; 
                 wordDisplay.style.color = 'black'; 
                 feedbackDisplay.textContent = '';
-                startTestAttempt(); // Startet den Versuch für das neue Wort
+                
+                // Timer-Balken zurücksetzen und Animation starten
+                timerBar.style.transition = 'none'; // Animation kurz deaktivieren
+                timerBar.style.width = '100%'; // Sofort auf 100% setzen
+                setTimeout(() => { // Nötig, damit der Browser die Änderung registriert
+                    timerBar.style.transition = 'width 2s linear';
+                    timerBar.style.width = '0%';
+                }, 20);
+
+                // Aufnahme starten und Timeout setzen
+                startRecording();
+                timer = setTimeout(() => {
+                    recognition.stop();
+                    feedbackDisplay.textContent = 'Zu langsam! Nächstes Wort...';
+                    setTimeout(showNextTestWord, 1500); // Nach kurzer Pause zum nächsten Wort
+                }, 2000); // 2 Sekunden
             } else { 
                 setTimeout(testAbschliessen, 500); 
             } 
         }
-
-        // ★★★ ANPASSUNG 2: Neue Funktion, um einen Versuch (inkl. Timer & Aufnahme) zu starten ★★★
-        function startTestAttempt() {
-            clearTimeout(timer); // Alten Timer sicherheitshalber löschen
-            
-            // Timer-Balken zurücksetzen und Animation starten
-            timerBar.style.transition = 'none';
-            timerBar.style.width = '100%';
-            setTimeout(() => {
-                timerBar.style.transition = 'width 2s linear';
-                timerBar.style.width = '0%';
-            }, 20);
-
-            startRecording();
-            timer = setTimeout(() => {
-                recognition.stop();
-                feedbackDisplay.textContent = 'Zu langsam! Nochmal...';
-                // Nach kurzer Pause denselben Versuch neu starten
-                setTimeout(startTestAttempt, 1500); 
-            }, 2000);
-        }
         
         recognition.onresult = (event) => {
-            clearTimeout(timer);
+            clearTimeout(timer); // Timer stoppen, da eine Antwort kam
             recognition.stop();
             const spokenText = event.results[0][0].transcript.trim().toLowerCase();
             
@@ -162,66 +159,71 @@
                 updateProgressDisplay();
                 setTimeout(showNextTestWord, 1200);
             } else {
+                // Falsche Antwort: Fortschritt zurücksetzen
                 wasCorrect = false;
                 feedbackDisplay.textContent = 'Falsch! Der Test startet neu.';
                 wordDisplay.style.color = '#dc3545';
-                wordsToTest = [...initialTestWords];
+                wordsToTest = [...initialTestWords]; // Test auf Anfangszustand zurücksetzen
                 updateProgressDisplay();
-                setTimeout(showNextTestWord, 2000);
+                setTimeout(showNextTestWord, 2000); // Nach längerer Pause neu starten
             }
         };
 
         function startRecording() { 
             wasCorrect = false; 
-            try { recognition.start(); } 
-            catch(e) { /* Fehler ignorieren, wenn Aufnahme schon läuft */ } 
+            try { 
+                // recognition.stop(); // Manchmal nötig, um eine alte Aufnahme sicher zu beenden
+                recognition.start(); 
+            } catch(e) { console.error("Aufnahme konnte nicht gestartet werden."); } 
         }
-        
-        // ★★★ ANPASSUNG 2: Fehlerbehandlung fängt jetzt "no-speech" ab ★★★
+
+        recognition.onend = () => { /* Diese Funktion wird nicht mehr für die Fehlerlogik benötigt */ };
         recognition.onerror = (event) => { 
-            if (event.error === 'no-speech') {
-                clearTimeout(timer); // WICHTIG: Den "Zu langsam"-Timer stoppen
-                feedbackDisplay.textContent = "Nichts gehört! Nochmal...";
-                // Nach kurzer Pause denselben Versuch neu starten
-                setTimeout(startTestAttempt, 1500);
-            } else {
+            // Verhindern, dass der Timer eine "zu langsam"-Nachricht auslöst, wenn es einen anderen Fehler gab
+            if (event.error !== 'no-speech') {
                 clearTimeout(timer);
                 feedbackDisplay.textContent = "Mikrofon-Fehler.";
                 console.error("Speech Recognition Error:", event.error);
-                // Evtl. zum nächsten Wort springen, um nicht stecken zu bleiben
                 setTimeout(showNextTestWord, 1500);
             }
         };
         
-        recognition.onend = () => { /* Wird nicht mehr benötigt */ };
-        
-        function populateLevelList() { levelList.innerHTML = ''; menuProgress.textContent = `Erreicht: Stufe ${hoechsteStufe} von ${stufen.length}`; for (let i = 1; i <= stufen.length; i++) { const item = document.createElement('div'); item.className = 'list-item'; item.textContent = `Stufe ${i}`; if (i > hoechsteStufe) { item.classList.add('locked'); } else { item.addEventListener('click', () => { ladeStufe(i, true); switchToTrainingMode(); sideMenu.classList.remove('open'); }); } levelList.appendChild(item); } }
-        function populateCustomLists() { customListContainer.innerHTML = ''; for (const listenName in customLists) { const item = document.createElement('div'); item.className = 'list-item'; item.textContent = listenName; if (localStorage.getItem(`customList_${listenName}_completed`) === 'true') { item.classList.add('completed'); } item.addEventListener('click', () => { ladeCustomList(listenName); switchToTrainingMode(); sideMenu.classList.remove('open'); }); customListContainer.appendChild(item); } }
+        function populateLevelList() { /* ... unverändert ... */ }
+        function populateCustomLists() { /* ... unverändert ... */ }
         
         function switchToTrainingMode() { 
-            document.body.classList.remove('test-mode');
-            clearTimeout(timer);
+            document.body.classList.remove('test-mode'); // Body-Klasse entfernen
+            clearTimeout(timer); // Sicherstellen, dass kein Test-Timer läuft
             currentMode = 'training'; 
             progressDisplay.style.display = 'none'; 
-            timerContainer.style.display = 'none';
+            timerContainer.style.display = 'none'; // Timer ausblenden
             wordDisplay.style.color = 'black'; 
             feedbackDisplay.textContent = ''; 
             leftButton.textContent = 'Test'; 
+            rightButton.textContent = 'Nächstes Wort'; 
             showNewTrainingWord(); 
         }
-        
-        // Unveränderte Funktionen
-        hamburgerButton.addEventListener('click', () => { populateLevelList(); populateCustomLists(); sideMenu.classList.toggle('open'); });
+
         function handleLeftButtonClick() { if (currentMode === 'training') { switchToTestMode(); } else { switchToTrainingMode(); } }
-        function handleRightButtonClick() { if (currentMode === 'training') { showNewTrainingWord(); } }
+        function handleRightButtonClick() { if (currentMode === 'training') { showNewTrainingWord(); } else { /* Button ist im Testmodus nicht sichtbar */ } }
+        
         leftButton.addEventListener('click', handleLeftButtonClick); 
         rightButton.addEventListener('click', handleRightButtonClick);
-        function openAdminMenu() { const pw = prompt("Admin-Passwort eingeben:"); if (pw !== ADMIN_PASSWORD) { alert("Falsches Passwort."); return; } const action = prompt("Aktion eingeben: 'reset' zum Zurücksetzen, 'set' zum Setzen einer Stufe."); if (action && action.toLowerCase() === 'reset') { localStorage.clear(); alert("Fortschritt wurde zurückgesetzt!"); location.reload(); } else if (action && action.toLowerCase() === 'set') { const newLevel = prompt("Höchste freigeschaltete Stufe eingeben:"); const levelNum = parseInt(newLevel); if (levelNum > 0 && levelNum <= stufen.length) { localStorage.setItem('hoechsteLeseStufe', levelNum); localStorage.setItem('aktuelleLeseStufe', levelNum); alert(`Fortschritt auf Stufe ${levelNum} gesetzt!`); location.reload(); } else { alert("Ungültige Stufennummer."); } } }
+        
+        // Admin-Funktionen und Start-Funktion bleiben unverändert
+        function openAdminMenu() { /* ... unverändert ... */ }
+        topUiPanel.addEventListener('click', () => { /* ... unverändert ... */ });
+        function appStarten() { /* ... unverändert ... */ }
+        
+        // Die unveränderten Funktionen hier zur Vollständigkeit
+        populateLevelList = function() { levelList.innerHTML = ''; menuProgress.textContent = `Erreicht: Stufe ${hoechsteStufe} von ${stufen.length}`; for (let i = 1; i <= stufen.length; i++) { const item = document.createElement('div'); item.className = 'list-item'; item.textContent = `Stufe ${i}`; if (i > hoechsteStufe) { item.classList.add('locked'); } else { item.addEventListener('click', () => { ladeStufe(i, true); switchToTrainingMode(); sideMenu.classList.remove('open'); }); } levelList.appendChild(item); } }
+        populateCustomLists = function() { customListContainer.innerHTML = ''; for (const listenName in customLists) { const item = document.createElement('div'); item.className = 'list-item'; item.textContent = listenName; if (localStorage.getItem(`customList_${listenName}_completed`) === 'true') { item.classList.add('completed'); } item.addEventListener('click', () => { ladeCustomList(listenName); switchToTrainingMode(); sideMenu.classList.remove('open'); }); customListContainer.appendChild(item); } }
+        hamburgerButton.addEventListener('click', () => { populateLevelList(); populateCustomLists(); sideMenu.classList.toggle('open'); });
+        openAdminMenu = function() { const pw = prompt("Admin-Passwort eingeben:"); if (pw !== ADMIN_PASSWORD) { alert("Falsches Passwort."); return; } const action = prompt("Aktion eingeben: 'reset' zum Zurücksetzen, 'set' zum Setzen einer Stufe."); if (action && action.toLowerCase() === 'reset') { localStorage.clear(); alert("Fortschritt wurde zurückgesetzt!"); location.reload(); } else if (action && action.toLowerCase() === 'set') { const newLevel = prompt("Höchste freigeschaltete Stufe eingeben:"); const levelNum = parseInt(newLevel); if (levelNum > 0 && levelNum <= stufen.length) { localStorage.setItem('hoechsteLeseStufe', levelNum); localStorage.setItem('aktuelleLeseStufe', levelNum); alert(`Fortschritt auf Stufe ${levelNum} gesetzt!`); location.reload(); } else { alert("Ungültige Stufennummer."); } } }
         topUiPanel.addEventListener('click', () => { clearTimeout(adminTapTimer); adminTapCount++; if (adminTapCount >= 7) { adminTapCount = 0; openAdminMenu(); } adminTapTimer = setTimeout(() => { adminTapCount = 0; }, 1500); });
-        function appStarten() { const gespeicherteHoechsteStufe = localStorage.getItem('hoechsteLeseStufe'); const gespeicherteAktuelleStufe = localStorage.getItem('aktuelleLeseStufe'); hoechsteStufe = gespeicherteHoechsteStufe ? parseInt(gespeicherteHoechsteStufe) : 1; let startStufe = gespeicherteAktuelleStufe ? parseInt(gespeicherteAktuelleStufe) : 1; if (startStufe > hoechsteStufe) startStufe = hoechsteStufe; ladeStufe(startStufe); switchToTrainingMode(); }
+        appStarten = function() { const gespeicherteHoechsteStufe = localStorage.getItem('hoechsteLeseStufe'); const gespeicherteAktuelleStufe = localStorage.getItem('aktuelleLeseStufe'); hoechsteStufe = gespeicherteHoechsteStufe ? parseInt(gespeicherteHoechsteStufe) : 1; let startStufe = gespeicherteAktuelleStufe ? parseInt(gespeicherteAktuelleStufe) : 1; if (startStufe > hoechsteStufe) startStufe = hoechsteStufe; ladeStufe(startStufe); switchToTrainingMode(); }
         
         appStarten();
     </script>
 </body>
 </html>
-
